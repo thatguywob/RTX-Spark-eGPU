@@ -1,0 +1,47 @@
+# Optional shortcuts; every task runs the documented PowerShell command.
+# Tasks that change devices or the scheduled task need an elevated (Administrator) terminal.
+[vars]
+ps = '%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File'
+
+[tasks.inspect]
+description = "Read-only: internal Spark, eGPU state, pending action"
+run = "{{vars.ps}} Configure-SparkEgpu.ps1 -Mode Inspect"
+
+[tasks.install]
+description = "Bind the Spark driver to the eGPU (elevated; unsupported binding)"
+confirm = "Bind the unsupported Spark driver to the eGPU? A crash or display interruption is possible."
+run = "{{vars.ps}} Configure-SparkEgpu.ps1 -Mode Install -AcceptUnsupportedBinding"
+
+[tasks.restart]
+description = "Restart the eGPU device, e.g. after Code 43 at boot (elevated)"
+run = "{{vars.ps}} Configure-SparkEgpu.ps1 -Mode Restart"
+
+[tasks.stop]
+description = "Disable the eGPU until 'mise run start' (elevated)"
+confirm = "Disable the eGPU? It stays disabled across reboots until 'mise run start'."
+run = "{{vars.ps}} Configure-SparkEgpu.ps1 -Mode Stop"
+
+[tasks.start]
+description = "Re-enable a stopped eGPU (elevated)"
+run = "{{vars.ps}} Configure-SparkEgpu.ps1 -Mode Start"
+
+[tasks.restore]
+description = "Restore a backup: mise run restore -- -BackupPath <state.json> (elevated)"
+run = "{{vars.ps}} Configure-SparkEgpu.ps1 -Mode Restore"
+
+[tasks.automation-auto]
+description = "Install connect-time automation that binds without asking (elevated)"
+confirm = "Install Automatic mode? It binds the unsupported driver as SYSTEM without asking."
+run = "{{vars.ps}} Install-SparkEgpuAutomation.ps1 -Trigger Automatic -AcceptUnsupportedBinding"
+
+[tasks.automation-prompt]
+description = "Install connect-time automation that asks first (elevated)"
+run = "{{vars.ps}} Install-SparkEgpuAutomation.ps1 -Trigger Prompt"
+
+[tasks.automation-remove]
+description = "Remove the automation task and installed scripts (elevated)"
+run = "{{vars.ps}} Install-SparkEgpuAutomation.ps1 -Uninstall"
+
+[tasks.test]
+description = "Hardware-free regression tests"
+run = "{{vars.ps}} tests\\Configure-SparkEgpu.Tests.ps1"
